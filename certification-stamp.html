@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Certification Stamp</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --ink: #1f2933;
+    --muted: #66727f;
+    --line: #e2e6eb;
+    --accent: #2f6f6a;
+    --shadow: 0 1px 3px rgba(20,30,40,.08), 0 6px 20px rgba(20,30,40,.05);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.5;
+  }
+  header { padding: 22px 28px 6px; }
+  header h1 { margin: 0; font-size: 20px; letter-spacing: .2px; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; max-width: 760px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 430px 1fr;
+    gap: 20px;
+    padding: 16px 28px 40px;
+    align-items: start;
+  }
+  @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  input[type="text"], textarea, select {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  textarea { resize: vertical; min-height: 58px; line-height: 1.45; }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #4a7fe8;
+    box-shadow: 0 0 0 2px rgba(74,127,232,0.12);
+  }
+
+  .subhead {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 22px 0 8px;
+  }
+  .subhead .note { text-transform: none; letter-spacing: 0; font-weight: 400; color: #9aa2ab; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 0.85fr 1.25fr auto auto auto;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .row input { font-size: 13.5px; padding: 7px 9px; }
+
+  .btn-icon {
+    background: none;
+    border: 1px solid transparent;
+    color: #aab1b9;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px 7px;
+    border-radius: 5px;
+    line-height: 1;
+    transition: color .15s, background .15s;
+  }
+  .btn-icon:hover:not(:disabled) { color: var(--ink); background: #f0f2f4; }
+  .btn-icon:disabled { color: #dfe3e7; cursor: default; }
+  .btn-icon.remove:hover:not(:disabled) { color: #e05c5c; background: #fdeeee; }
+
+  .btn-add {
+    margin-top: 2px;
+    background: none;
+    border: 1px dashed #cfd4da;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    width: 100%;
+    transition: border-color .15s, color .15s;
+  }
+  .btn-add:hover { border-color: #a9b1ba; color: var(--ink); }
+
+  .tpl-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .tpl-row input, .tpl-row select { flex: 1 1 auto; min-width: 0; }
+  .tpl-row .action { flex: 0 0 auto; }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  button.action {
+    font: inherit;
+    font-size: 14px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background .12s, border-color .12s, transform .04s;
+  }
+  button.action:hover { border-color: #cdd4db; }
+  button.action:active { transform: translateY(1px); }
+  button.action:disabled { color: #c3c9cf; cursor: default; background: #fafbfc; }
+  button.action.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.action.primary:hover { background: #275c58; }
+  #status { font-size: 13px; color: var(--accent); min-height: 18px; margin-left: 2px; }
+  #status.warn { color: #c0562f; }
+
+  .preview-label {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .canvas-holder {
+    background:
+      linear-gradient(45deg, #eef0f2 25%, transparent 25%, transparent 75%, #eef0f2 75%) 0 0/16px 16px,
+      linear-gradient(45deg, #eef0f2 25%, #fbfbfc 25%, #fbfbfc 75%, #eef0f2 75%) 8px 8px/16px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    overflow: auto;
+  }
+  #stamp {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    box-shadow: 0 1px 6px rgba(0,0,0,.12);
+    background: #fff;
+  }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Certification Stamp</h1>
+    <p>Fill in the fields on the left — the stamp preview updates as you type. Every field's label and value is editable, and rows can be reordered or removed. Then copy the stamp as an image or download a PNG to paste onto a PDF. Field contents aren't kept between sessions, but you can save named templates (stored in this browser).</p>
+  </header>
+
+  <div class="grid">
+    <!-- ── Editor ─────────────────────────────────────────── -->
+    <div class="panel">
+      <div class="field">
+        <label for="stmt">Certifying statement</label>
+        <textarea id="stmt">I certify this to be a true copy of the original document, which I have seen.</textarea>
+      </div>
+
+      <div class="subhead">Fields <span class="note">— edit labels &amp; values, drag order with ▲ ▼</span></div>
+      <div id="rows"></div>
+      <button class="btn-add" id="addField" type="button">+ Add field</button>
+
+      <div class="field" style="margin-top:22px;">
+        <label for="f_date">Date</label>
+        <input type="text" id="f_date" value="" />
+      </div>
+
+      <div class="field">
+        <label for="sizeSelect">Export size (how large it pastes into your PDF)</label>
+        <select id="sizeSelect">
+          <option value="0.5">Small — pastes ~1/6 size</option>
+          <option value="1" selected>Medium — ~1/3 size (default)</option>
+          <option value="1.5">Large — ~1/2 size</option>
+          <option value="3">Full resolution — largest &amp; sharpest (resize after pasting)</option>
+        </select>
+      </div>
+
+      <div class="subhead">Templates</div>
+      <div class="tpl-row">
+        <input type="text" id="tplName" placeholder="Template name" />
+        <button class="action" id="tplSave" type="button">Save</button>
+      </div>
+      <div class="tpl-row">
+        <select id="tplSelect"></select>
+        <button class="action" id="tplLoad" type="button">Load</button>
+        <button class="action" id="tplDelete" type="button">Delete</button>
+      </div>
+      <div id="tplNote" class="hint" style="display:none;">Template saving isn't available in this browser.</div>
+
+      <div class="toolbar">
+        <button class="action primary" id="copyBtn" type="button">Copy to clipboard</button>
+        <button class="action" id="downloadBtn" type="button">Download as PNG</button>
+        <span id="status"></span>
+      </div>
+    </div>
+
+    <!-- ── Preview / export ───────────────────────────────── -->
+    <div class="preview-wrap">
+      <div class="preview-label">Preview (this is what gets copied / downloaded)</div>
+      <div class="canvas-holder">
+        <canvas id="stamp"></canvas>
+      </div>
+      <div class="hint">Signature line stays blank — sign it by hand after pasting or printing. Acrobat pastes images in proportion to their pixels, so the <strong>Export size</strong> setting controls how big it lands. Pick a larger size if you want it sharper, then scale it down in Acrobat.</div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById("stamp");
+  var ctx = canvas.getContext("2d");
+
+  // ── Config ──────────────────────────────────────────────
+  var PREVIEW_SCALE = 2;       // on-screen backing resolution (crisp preview)
+  var W = 720;                 // logical width
+  var PAD = 30;                // inner padding
+  var LH = 22;                 // line height
+  var VALUE_OFFSET = 168;      // fixed tab stop for the value column
+  var SIG_TOP_GAP = 44;        // vertical space above the signature row
+  var SIG_BELOW = 10;          // extra space below the signature line
+  var SIG_LINE_LEN = 134;      // signature underline length
+  var FONT_STACK = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  var FS = 15;
+  var FONT_STMT  = FS + "px " + FONT_STACK;
+  var FONT_VALUE = FS + "px " + FONT_STACK;
+  var FONT_LABEL = "700 " + FS + "px " + FONT_STACK;
+
+  var innerW = W - 2 * PAD;
+  var valueMaxW = innerW - VALUE_OFFSET;
+
+  // ── State: unified ordered rows (label + value) ─────────
+  var rows = [
+    { label: "Full name", value: "Conor Horgan" },
+    { label: "Position/Capacity", value: "Executive at Marwyn Jersey Limited, ACCA accountant (membership no. 4648455)" },
+    { label: "Contact", value: "conorhorgan@marwyn.com" },
+    { label: "Address", value: "Woodville, La Rue De La Hague, St Peter, Jersey, JE3 7DB" }
+  ];
+
+  // ── Helpers ─────────────────────────────────────────────
+  function el(id) { return document.getElementById(id); }
+
+  function todayFormatted() {
+    var months = ["January","February","March","April","May","June",
+                  "July","August","September","October","November","December"];
+    var d = new Date();
+    return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
+  }
+
+  // Word-wrap text to maxW using the given font on context c.
+  function wrap(c, text, maxW, font) {
+    c.font = font;
+    var paras = String(text == null ? "" : text).split("\n");
+    var out = [];
+    for (var p = 0; p < paras.length; p++) {
+      var words = paras[p].split(/\s+/);
+      var line = "";
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        if (w === "") continue;
+        var test = line ? line + " " + w : w;
+        if (c.measureText(test).width > maxW && line) { out.push(line); line = w; }
+        else line = test;
+      }
+      out.push(line);
+    }
+    return out.length ? out : [""];
+  }
+
+  // ── Draw the stamp onto a canvas at a given scale ───────
+  function drawStamp(cnv, c, scale) {
+    var stmt = el("stmt").value;
+    var dateVal = el("f_date").value;
+
+    var items = rows.map(function (r) {
+      var lab = (r.label || "").trim();
+      if (lab && lab.charAt(lab.length - 1) !== ":") lab += ":";
+      return [lab, r.value || ""];
+    });
+
+    // Measurement pass (measureText is independent of canvas size/transform)
+    var stmtLines = wrap(c, stmt, innerW, FONT_STMT);
+    var itemLines = items.map(function (it) { return wrap(c, it[1], valueMaxW, FONT_VALUE); });
+
+    var y = PAD;
+    y += stmtLines.length * LH;
+    y += LH;
+    var itemY = [];
+    for (var i = 0; i < items.length; i++) {
+      itemY.push(y);
+      y += Math.max(1, itemLines[i].length) * LH + 6;
+    }
+    y += SIG_TOP_GAP;
+    var sigY = y;
+    y += LH; y += SIG_BELOW; y += PAD;
+    var H = y;
+
+    // Size + scale (resets context state)
+    cnv.width = Math.round(W * scale);
+    cnv.height = Math.round(H * scale);
+    if (cnv === canvas) cnv.style.width = W + "px";
+    c.setTransform(scale, 0, 0, scale, 0, 0);
+
+    // Background + border
+    c.fillStyle = "#ffffff";
+    c.fillRect(0, 0, W, H);
+    c.strokeStyle = "#111111";
+    c.lineWidth = 1.5;
+    c.strokeRect(0.75, 0.75, W - 1.5, H - 1.5);
+
+    c.textBaseline = "top";
+    c.fillStyle = "#111111";
+
+    // Statement
+    c.font = FONT_STMT;
+    var sy = PAD;
+    for (var s = 0; s < stmtLines.length; s++) { c.fillText(stmtLines[s], PAD, sy); sy += LH; }
+
+    // Field rows
+    for (var fi = 0; fi < items.length; fi++) {
+      var fy = itemY[fi];
+      c.font = FONT_LABEL;
+      c.fillText(items[fi][0], PAD, fy);
+      c.font = FONT_VALUE;
+      var lines = itemLines[fi];
+      for (var li = 0; li < lines.length; li++) {
+        c.fillText(lines[li], PAD + VALUE_OFFSET, fy + li * LH);
+      }
+    }
+
+    // Signature + underline
+    c.font = FONT_LABEL;
+    c.fillText("Signature:", PAD, sigY);
+    var sigW = c.measureText("Signature:").width;
+    var lineX1 = PAD + sigW + 12;
+    var lineX2 = lineX1 + SIG_LINE_LEN;
+    c.strokeStyle = "#111111";
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(lineX1, sigY + LH - 5);
+    c.lineTo(lineX2, sigY + LH - 5);
+    c.stroke();
+
+    // Date, nudged towards the middle (clamped)
+    c.font = FONT_LABEL;
+    var dLabW = c.measureText("Date:").width;
+    c.font = FONT_VALUE;
+    var dValStr = " " + dateVal;
+    var dValW = c.measureText(dValStr).width;
+    var totalW = dLabW + dValW;
+    var dStart = PAD + innerW * 0.5;
+    var maxStart = PAD + innerW - totalW;
+    if (dStart > maxStart) dStart = maxStart;
+    if (dStart < lineX2 + 24) dStart = lineX2 + 24;
+    c.font = FONT_LABEL;
+    c.fillText("Date:", dStart, sigY);
+    c.font = FONT_VALUE;
+    c.fillText(dValStr, dStart + dLabW, sigY);
+  }
+
+  function render() { drawStamp(canvas, ctx, PREVIEW_SCALE); }
+
+  // ── Editor rows ─────────────────────────────────────────
+  function moveRow(idx, dir) {
+    var j = idx + dir;
+    if (j < 0 || j >= rows.length) return;
+    var tmp = rows[idx]; rows[idx] = rows[j]; rows[j] = tmp;
+    buildRows(); render();
+  }
+
+  function buildRows() {
+    var wrapEl = el("rows");
+    wrapEl.innerHTML = "";
+    for (var i = 0; i < rows.length; i++) {
+      (function (idx) {
+        var row = document.createElement("div");
+        row.className = "row";
+
+        var labInput = document.createElement("input");
+        labInput.type = "text";
+        labInput.placeholder = "Label";
+        labInput.value = rows[idx].label;
+        labInput.addEventListener("input", function () { rows[idx].label = labInput.value; render(); });
+
+        var valInput = document.createElement("input");
+        valInput.type = "text";
+        valInput.placeholder = "Value";
+        valInput.value = rows[idx].value;
+        valInput.addEventListener("input", function () { rows[idx].value = valInput.value; render(); });
+
+        var up = document.createElement("button");
+        up.className = "btn-icon"; up.type = "button"; up.title = "Move up";
+        up.innerHTML = "&#9650;"; up.disabled = (idx === 0);
+        up.addEventListener("click", function () { moveRow(idx, -1); });
+
+        var down = document.createElement("button");
+        down.className = "btn-icon"; down.type = "button"; down.title = "Move down";
+        down.innerHTML = "&#9660;"; down.disabled = (idx === rows.length - 1);
+        down.addEventListener("click", function () { moveRow(idx, 1); });
+
+        var rm = document.createElement("button");
+        rm.className = "btn-icon remove"; rm.type = "button"; rm.title = "Remove this field";
+        rm.innerHTML = "&times;";
+        rm.addEventListener("click", function () { rows.splice(idx, 1); buildRows(); render(); });
+
+        row.appendChild(labInput);
+        row.appendChild(valInput);
+        row.appendChild(up);
+        row.appendChild(down);
+        row.appendChild(rm);
+        wrapEl.appendChild(row);
+      })(i);
+    }
+  }
+
+  // ── Templates (localStorage) ────────────────────────────
+  var STORE_KEY = "certStampTemplates_v2";
+
+  function storageOK() {
+    try { localStorage.setItem("__cs_test", "1"); localStorage.removeItem("__cs_test"); return true; }
+    catch (e) { return false; }
+  }
+  function loadStore() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  function saveStore(obj) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); return true; }
+    catch (e) { return false; }
+  }
+
+  function currentData() {
+    return {
+      stmt: el("stmt").value,
+      date: el("f_date").value,
+      size: el("sizeSelect").value,
+      rows: rows.map(function (r) { return { label: r.label, value: r.value }; })
+    };
+  }
+  function applyData(dat) {
+    el("stmt").value = dat.stmt || "";
+    el("f_date").value = dat.date || todayFormatted();
+    if (dat.size) el("sizeSelect").value = dat.size;
+    rows = (dat.rows || []).map(function (x) { return { label: x.label || "", value: x.value || "" }; });
+    buildRows(); render();
+  }
+
+  function refreshTemplateList() {
+    var sel = el("tplSelect");
+    var names = Object.keys(loadStore()).sort();
+    sel.innerHTML = "";
+    if (!names.length) {
+      var o = document.createElement("option");
+      o.value = ""; o.textContent = "(no saved templates)";
+      sel.appendChild(o);
+      sel.disabled = true; el("tplLoad").disabled = true; el("tplDelete").disabled = true;
+      return;
+    }
+    sel.disabled = false; el("tplLoad").disabled = false; el("tplDelete").disabled = false;
+    for (var i = 0; i < names.length; i++) {
+      var op = document.createElement("option");
+      op.value = names[i]; op.textContent = names[i];
+      sel.appendChild(op);
+    }
+  }
+
+  // ── Status message ──────────────────────────────────────
+  var statusTimer = null;
+  function showStatus(msg, warn) {
+    var s = el("status");
+    s.textContent = msg;
+    s.className = warn ? "warn" : "";
+    if (statusTimer) clearTimeout(statusTimer);
+    statusTimer = setTimeout(function () { s.textContent = ""; s.className = ""; }, 4000);
+  }
+
+  // ── Build export blob at the chosen size ────────────────
+  function exportScale() {
+    var v = parseFloat(el("sizeSelect").value);
+    return (isFinite(v) && v > 0) ? v : 0.5;
+  }
+  function makeStampBlob(cb) {
+    var off = document.createElement("canvas");
+    var oc = off.getContext("2d");
+    drawStamp(off, oc, exportScale());
+    if (!off.toBlob) { cb(null); return; }
+    off.toBlob(function (blob) { cb(blob); }, "image/png");
+  }
+
+  // ── Export: copy to clipboard ───────────────────────────
+  function copyToClipboard() {
+    if (!navigator.clipboard || typeof window.ClipboardItem === "undefined") {
+      showStatus("Clipboard not available here — use Download as PNG.", true);
+      return;
+    }
+    makeStampBlob(function (blob) {
+      if (!blob) { showStatus("Copy failed — use Download as PNG.", true); return; }
+      try {
+        navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(function () {
+          showStatus("Copied ✓  — paste onto your PDF.");
+        }).catch(function () {
+          showStatus("Copy blocked — use Download as PNG instead.", true);
+        });
+      } catch (e) {
+        showStatus("Copy blocked — use Download as PNG instead.", true);
+      }
+    });
+  }
+
+  // ── Export: download PNG ────────────────────────────────
+  function downloadPNG() {
+    makeStampBlob(function (blob) {
+      if (!blob) {
+        var url0 = canvas.toDataURL("image/png"); // last-ditch fallback
+        triggerDownload(url0, false); return;
+      }
+      var url = URL.createObjectURL(blob);
+      triggerDownload(url, true);
+      showStatus("PNG downloaded.");
+    });
+  }
+  function triggerDownload(url, revoke) {
+    var a = document.createElement("a");
+    a.href = url; a.download = "certification-stamp.png";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    if (revoke) setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  // ── Wire up ─────────────────────────────────────────────
+  el("stmt").addEventListener("input", render);
+  el("f_date").addEventListener("input", render);
+  el("addField").addEventListener("click", function () {
+    rows.push({ label: "", value: "" });
+    buildRows(); render();
+    var labels = document.querySelectorAll("#rows .row input:first-child");
+    if (labels.length) labels[labels.length - 1].focus();
+  });
+  el("copyBtn").addEventListener("click", copyToClipboard);
+  el("downloadBtn").addEventListener("click", downloadPNG);
+
+  el("tplSave").addEventListener("click", function () {
+    var title = el("tplName").value.trim();
+    if (!title) { showStatus("Enter a template name first.", true); el("tplName").focus(); return; }
+    var store = loadStore();
+    var existed = Object.prototype.hasOwnProperty.call(store, title);
+    store[title] = currentData();
+    if (saveStore(store)) {
+      refreshTemplateList(); el("tplSelect").value = title;
+      showStatus(existed ? 'Template "' + title + '" updated.' : 'Template "' + title + '" saved.');
+    } else {
+      showStatus("Could not save — storage is blocked in this browser.", true);
+    }
+  });
+  el("tplLoad").addEventListener("click", function () {
+    var name = el("tplSelect").value; if (!name) return;
+    var store = loadStore();
+    if (store[name]) { applyData(store[name]); el("tplName").value = name; showStatus('Loaded "' + name + '".'); }
+  });
+  el("tplDelete").addEventListener("click", function () {
+    var name = el("tplSelect").value; if (!name) return;
+    var store = loadStore(); delete store[name]; saveStore(store);
+    refreshTemplateList(); showStatus('Deleted "' + name + '".');
+  });
+
+  // ── Init ────────────────────────────────────────────────
+  el("f_date").value = todayFormatted();
+  buildRows();
+  if (storageOK()) {
+    refreshTemplateList();
+  } else {
+    el("tplName").disabled = true; el("tplSave").disabled = true;
+    el("tplSelect").disabled = true; el("tplLoad").disabled = true; el("tplDelete").disabled = true;
+    el("tplNote").style.display = "block";
+  }
+  render();
+})();
+</script>
+</body>
+</html>
